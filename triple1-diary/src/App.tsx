@@ -1,5 +1,5 @@
 import AppButton from "./components/AppButton";
-import Bookshelf from "./components/BookShelf";
+import Bookshelf from "./components/Bookshelf";
 
 export default function App() {
   return (
