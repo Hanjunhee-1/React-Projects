@@ -8,6 +8,7 @@ export default function AppButton({children, onClick}: Props) {
         <button
             onClick={onClick}
             className="
+                font-serif
                 text-[var(--ink)]
                 px-6 py-3 rounded-lg
                 border border-[var(--ink)]
