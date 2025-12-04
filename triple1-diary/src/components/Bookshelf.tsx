@@ -1,14 +1,19 @@
-export default function Bookshelf () {
+type Props = {
+    children: React.ReactNode;
+}
+
+export default function Bookshelf ({children}: Props) {
     return (
         <div 
             className="
-                w-full h-64 
+                py-3
+                w-full h-auto 
                 bg-opacity-10 
-                border border-[var-(--ink)] rounded-lg 
-                flex items-center justify-center
+                border border-6 border-[var(--ink)] rounded-lg 
+                flex gap-6 justify-center
             "
         >
-            <p className="opacity-60 font-serif text-5xl text-[var(--ink)]">📚 Your diary books will appear here...</p>
+            {children}
         </div>
     )
 };
