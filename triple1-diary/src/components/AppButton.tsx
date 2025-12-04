@@ -10,6 +10,7 @@ export default function AppButton({children, onClick}: Props) {
             className="
                 font-serif
                 text-[var(--ink)]
+                mt-6
                 px-6 py-3 rounded-lg
                 border border-[var(--ink)]
                 transition-all duration-300
