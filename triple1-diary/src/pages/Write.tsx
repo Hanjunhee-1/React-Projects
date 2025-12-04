@@ -1,8 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import AppButton from "../components/AppButton";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Write () {
-    const phrases = [
+    const placeholderPhrases = [
         "기록은 기억을 지켜주는 작은 병이에요", 
         "기억은 말보다 잔잔하게 쌓여요",
         "무조건 대단할 필요는 없어요",
@@ -13,17 +14,43 @@ export default function Write () {
         "하루에 하나씩 나에게 남기는 작은 불씨",
         "쓰는 동안에는 자신만의 세계에 빠져보세요"
     ];
+    const alertPhrases = [
+        "잉크에 담긴 당신의 하루를 간직해둘게요",
+        "작은 불씨를 남겨주어서 고마워요",
+        "당신의 내일의 빛을 켜둘게요"
+    ]
     const [text, setText] = useState("");
-    const [saved, setSaved] = useState("");
+    const [diaries, setDiaries] = useState([]);
+
+    // localStorage 사용
+    useEffect(() => {
+        const stored = localStorage.getItem("diaries");
+        if (stored) {
+            setDiaries(JSON.parse(stored));
+        }
+    }, []);
 
     const handleSave = () => {
         if (!text.trim()) return; // 빈 내용이면 무시
-        setSaved(text); // 입력 내용 저장
-        setText(""); // 입력 필드 비우기
+        
+        // diary 저장
+        const newDiary = {
+            id: uuidv4(),
+            content: text,
+            date: new Date().toLocaleDateString(),
+        };
+
+        const updated = [...diaries, newDiary];
+        setDiaries(updated);
+
+        localStorage.setItem("diaries", JSON.stringify(updated));
+
+        setText("");
+        alert(alertPhrases[Math.floor((Math.random() * alertPhrases.length))]);
     }
 
     const randomPhrase = () => {
-        return phrases[Math.floor((Math.random() * phrases.length))];
+        return placeholderPhrases[Math.floor((Math.random() * placeholderPhrases.length))];
     }
 
     return (
@@ -41,14 +68,6 @@ export default function Write () {
             />
 
             <AppButton onClick={handleSave}>Save</AppButton>
-
-            {saved && (
-                <div className="mt-10 max-w-2xl w-full bg-black/30 border border-gray-600 rounded-md p-6 shadow-inner">
-                <h2 className="text-lg font-semibold mb-3 text-amber-300">📖 저장된 일기</h2>
-                <p className="whitespace-pre-wrap leading-7">{saved}</p>
-                </div>
-            )}
-
         </div>
     )
 }
