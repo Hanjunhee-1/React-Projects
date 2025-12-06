@@ -7,7 +7,7 @@ export default function Bookshelf ({children}: Props) {
         <div 
             className="
                 py-3
-                w-full h-auto 
+                w-full h-auto
                 bg-opacity-10 
                 border border-6 border-[var(--ink)] rounded-lg 
                 flex gap-6 justify-center
