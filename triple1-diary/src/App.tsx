@@ -1,21 +1,22 @@
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom"
+import Write from "./pages/Write"
+import Home from "./pages/Home"
+import Library from "./pages/Library"
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)] flex flex-col items-center justify-center">
-      <h1 className="font-serif text-5xl tracking-wider">
-        Triple1 Diary 📖
-      </h1>
+    <Router>
+      <nav className="font-serif flex justify-center gap-20 p-5 text-white fixed top-0 bg-black/40 w-full">
+        <Link className="rounded-xl hover:scale-150 hover:text-[#ffaa00] hover:shadow-[0_0_10px_var(--ink)] transition duration-300 text-3xl" to="/">Home</Link>
+        <Link className="rounded-xl hover:scale-150 hover:text-[#ffaa00] hover:shadow-[0_0_10px_var(--ink)] transition duration-300 text-3xl" to="/write">Write</Link>
+        <Link className="rounded-xl hover:scale-150 hover:text-[#ffaa00] hover:shadow-[0_0_10px_var(--ink)] transition duration-300 text-3xl" to="/library">Library</Link>
+      </nav>
 
-      <button
-        className=" 
-          px-6 py-3 rounded-lg
-          border border-[var(--ink)]
-          transition-all duration-300
-          hover:shadow-[0_0_20px_var(--ink)]
-          hover:scale-105
-        "
-      >
-        Start Writing ✒️
-      </button>
-    </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/write" element={<Write />} />
+        <Route path="/library" element={<Library />} />
+      </Routes>
+    </Router>
   ) 
 }

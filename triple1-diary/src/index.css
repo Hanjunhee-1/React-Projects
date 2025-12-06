@@ -2,8 +2,25 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #1b1a18;
+  --bg: #1b1b1b;
   --paper: #f4efe3;
   --ink: #c59d5f;
+  --color-primary: #ffaa00;
+
+  --text-1: #ffffff;
+  --text-2: #aaaaaa;
+
+  /**
+    Spacing system
+  **/
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
 }
 
+body {
+  background-color: var(--bg);
+}
