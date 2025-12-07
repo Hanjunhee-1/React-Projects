@@ -1,2 +1,7 @@
 @import "tailwindcss";
 
+:root {
+    --black-tile: #666600;
+    --white-tile: #ffff99;
+    --bg-color: #333333;
+}
