@@ -23,21 +23,205 @@
  *      - rook   -> 좌우앞뒤의 모든 칸으로 이동 가능. 기물 뛰어넘기 불가능.
  *      - queen  -> 좌우앞뒤의 모든 칸과 대각선의 모든 칸으로 이동 가능. 기물 뛰어넘기 불가능.
  *      - king   -> 좌우앞뒤로 한 칸과 대각선의 한 칸 이동 가능. 기물 뛰어넘기 불가능.
+ * 4. 기물 간 상호작용 구현
+ *      - pawn -> 기물 잡기, 프로모션
+ *      - knight, bishop, rook, queen -> 기물 잡기
+ *      - king -> 기물 잡기, 체크메이트 상황
+ * 5. 기물이 놓인 순서 기록
+ *      - 기물이동 -> w_Pe4, b_Pe5, w_Nf3
+ *      - 기물잡기 -> w_Nxe5 : whiteKnight 가 e5 에 놓인 기물을 잡음 
  */
+import blackRook from "../img/black_rook.png";
+import blackKnight from "../img/black_knight.png";
+import blackBishop from "../img/black_bishop.png";
+import blackQueen from "../img/black_queen.png";
+import blackKing from "../img/black_king.png";
+import blackPawn from "../img/black_pawn.png";
+import whiteRook from "../img/white_rook.png";
+import whiteKnight from "../img/white_knight.png";
+import whiteBishop from "../img/white_bishop.png";
+import whiteQueen from "../img/white_queen.png";
+import whiteKing from "../img/white_king.png";
+import whitePawn from "../img/white_pawn.png";
+import type React from "react";
+
 export default function Chess () {
-    const tiles = [];
+    // 화면 표기용 타일
+    const tiles: React.ReactNode[] = [];
+
+    // 기록용 타일
+    const tilesSaved: string[] = [];
+
+    // 표시용 숫자와 문자들
     const numbers = [8,7,6,5,4,3,2,1];
     const letters = ["a","b","c","d","e","f","g","h"];
 
-    for (let row=0; row<8; row++) {
-        for (let col=0; col<8; col++) {
-            const isDark = (row+col) % 2 === 1;
+    const makeTiles = () => {
+        for (let row=0; row<8; row++) {
+            for (let col=0; col<8; col++) {
+                const isDark = (row+col) % 2 === 1;
 
-            tiles.push(
-                <div key={`${row}-${col}`} className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"}`} />
-            );
+                // blackRook
+                if ((row == 0 && col == 0) || (row == 0 && col == 7)) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={blackRook} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("b_R");
+                }
+                // whiteRook
+                else if ((row == 7 && col == 0) || (row == 7 && col == 7)) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={whiteRook} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("w_R");
+                }
+                // blackKnight
+                else if ((row == 0 && col == 1) || (row == 0 && col == 6)) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={blackKnight} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("b_N");
+                }
+                // whiteKnight
+                else if ((row == 7 && col == 1) || (row == 7 && col == 6)) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={whiteKnight} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("w_N");
+                }
+                // blackBishop
+                else if ((row == 0 && col == 2) || (row == 0 && col == 5)) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={blackBishop} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("b_B");
+                }
+                // whiteBishop
+                else if ((row == 7 && col == 2) || (row == 7 && col == 5)) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={whiteBishop} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("w_B");
+                }
+                // blackQueen
+                else if (row == 0 && col == 3) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={blackQueen} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("b_Q");
+                }
+                // whiteQueen
+                else if (row == 7 && col == 3) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={whiteQueen} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("w_Q");
+                }
+                // blackKing
+                else if (row == 0 && col == 4) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={blackKing} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("b_K");
+                }
+                // whiteKing
+                else if (row == 7 && col == 4) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={whiteKing} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("w_K");
+                }
+                // blackPawn
+                else if (row == 1) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={blackPawn} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("b_P");
+                }
+                // whitePawn
+                else if (row == 6) {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
+                        >
+                            <img src={whitePawn} className="h-[60px] w-[60px]" draggable={false} />
+                        </div>
+                    )
+                    tilesSaved.push("w_P");
+                }
+                else {
+                    tiles.push(
+                        <div 
+                            key={`${row}-${col}`} 
+                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"}`}
+                        >
+                            
+                        </div>
+                    );
+                    tilesSaved.push("None");
+                }
+            }
         }
+
+        console.log(tilesSaved);
     }
+    makeTiles();
 
     return (
         <div className="bg-(--bg-color) h-screen w-screen flex justify-center items-center">
