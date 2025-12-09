@@ -5,7 +5,7 @@
  *      - 세로 -> 숫자 표시
  *      - 가로 -> 알파벳 표시
  * 
- * 2. 각 위치별 기물 놓기
+ * 2. 각 위치별 기물 놓기 (2025.12.08 완)
  *      - 맨 위 블랙, 맨 아래 화이트
  *      - a2 ~ h2 -> white pawn
  *      - a1, h1 -> white rook
@@ -43,185 +43,126 @@ import whiteBishop from "../img/white_bishop.png";
 import whiteQueen from "../img/white_queen.png";
 import whiteKing from "../img/white_king.png";
 import whitePawn from "../img/white_pawn.png";
-import type React from "react";
+import { useState } from "react";
+
+type Piece = "b_R" | "b_N" | "b_B" | "b_Q" | "b_K" | "b_P" |
+             "w_R" | "w_N" | "w_B" | "w_Q" | "w_K" | "w_P" |
+             "None";
+
+const PIECE_IMAGE_MAP: Record<Piece, string | null> = {
+    b_P: blackPawn,
+    b_R: blackRook,
+    b_N: blackKnight,
+    b_B: blackBishop,
+    b_Q: blackQueen,
+    b_K: blackKing,
+
+    w_P: whitePawn,
+    w_R: whiteRook,
+    w_N: whiteKnight,
+    w_B: whiteBishop,
+    w_Q: whiteQueen,
+    w_K: whiteKing,
+
+    None: null
+};
 
 export default function Chess () {
-    // 화면 표기용 타일
-    const tiles: React.ReactNode[] = [];
-
     // 기록용 타일
-    const tilesSaved: string[] = [];
+    const createInitialBoard = (): Piece[] => {
+        const board: Piece[] = new Array(64).fill("None");
+
+        // black 메이저 기물 (row 0)
+        const blackMajor: Piece[] = ["b_R","b_N","b_B","b_Q","b_K","b_B","b_N","b_R"];
+        for (let i=0; i<8; i++) board[i] = blackMajor[i];
+
+        // black pawns (row 1)
+        for (let c=0; c<8; c++) board[1*8 + c] = "b_P";
+
+        // white pawns (row 6)
+        for (let c=0; c<8; c++) board[6*8 + c] = "w_P";
+
+        // white major (row 7)
+        const whiteMajor: Piece[] = ["w_R","w_N","w_B","w_Q","w_K","w_B","w_N","w_R"];
+        for (let c=0; c<8; c++) board[7*8 + c] = whiteMajor[c];
+
+        return board;
+    }
+    
+    const [board, setBoard] = useState<Piece[]>(createInitialBoard());
+
+    // 사용자가 선택한 칸 (없으면 null)
+    const [selected, setSelected] = useState<{ row: number; col: number } | null>(null);
+
+    // 선택된 기물이 움직일 수 있는 위치 목록
+    const [validMoves, setValidMoves] = useState<{ row: number; col: number }[]>([])
 
     // 표시용 숫자와 문자들
     const numbers = [8,7,6,5,4,3,2,1];
     const letters = ["a","b","c","d","e","f","g","h"];
 
-    const makeTiles = () => {
-        for (let row=0; row<8; row++) {
-            for (let col=0; col<8; col++) {
-                const isDark = (row+col) % 2 === 1;
+    // 기물 움직임 계산
+    const calculateMoves = (piece: Piece, row: number, col: number) => {
+        const moves: { row: number; col: number }[] = [];
 
-                // blackRook
-                if ((row == 0 && col == 0) || (row == 0 && col == 7)) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={blackRook} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("b_R");
-                }
-                // whiteRook
-                else if ((row == 7 && col == 0) || (row == 7 && col == 7)) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={whiteRook} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("w_R");
-                }
-                // blackKnight
-                else if ((row == 0 && col == 1) || (row == 0 && col == 6)) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={blackKnight} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("b_N");
-                }
-                // whiteKnight
-                else if ((row == 7 && col == 1) || (row == 7 && col == 6)) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={whiteKnight} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("w_N");
-                }
-                // blackBishop
-                else if ((row == 0 && col == 2) || (row == 0 && col == 5)) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={blackBishop} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("b_B");
-                }
-                // whiteBishop
-                else if ((row == 7 && col == 2) || (row == 7 && col == 5)) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={whiteBishop} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("w_B");
-                }
-                // blackQueen
-                else if (row == 0 && col == 3) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={blackQueen} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("b_Q");
-                }
-                // whiteQueen
-                else if (row == 7 && col == 3) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={whiteQueen} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("w_Q");
-                }
-                // blackKing
-                else if (row == 0 && col == 4) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={blackKing} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("b_K");
-                }
-                // whiteKing
-                else if (row == 7 && col == 4) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={whiteKing} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("w_K");
-                }
-                // blackPawn
-                else if (row == 1) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={blackPawn} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("b_P");
-                }
-                // whitePawn
-                else if (row == 6) {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"} flex justify-center items-center`}
-                        >
-                            <img src={whitePawn} className="h-[60px] w-[60px]" draggable={false} />
-                        </div>
-                    )
-                    tilesSaved.push("w_P");
-                }
-                else {
-                    tiles.push(
-                        <div 
-                            key={`${row}-${col}`} 
-                            className={`w-[80px] h-[80px] ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"}`}
-                        >
-                            
-                        </div>
-                    );
-                    tilesSaved.push("None");
-                }
+        // whitePawn
+        if (piece === "w_P") {
+            if (row - 1 >= 0 && board[(row-1)*8 + col] === "None") {
+                moves.push({ row: row-1, col });
+            }
+
+            // 첫 움직임이라면 두 칸
+            if (row === 6 && board[(row-1)*8 + col] === "None" && board[(row-2)*8 + col] === "None") {
+                moves.push({ row: row-2, col });
             }
         }
 
-        console.log(tilesSaved);
+        // blackPawn
+        else if (piece === "b_P") {
+            if (row + 1 < 8 && board[(row+1)*8 + col] === "None") {
+                moves.push({ row: row+1, col });
+            }
+            if (row === 1 && board[(row+1)*8 + col] === "None" && board[(row+2)*8 + col] === "None") {
+                moves.push({ row: row+2, col });
+            }
+        }
+
+        return moves;
     }
-    makeTiles();
+
+    // 기물 움직임 처리
+    const movePiece = (fromRow: number, fromCol: number, toRow: number, toCol: number) => {
+        const boardCopy = [...board];
+        const movePiece = boardCopy[fromRow * 8 + fromCol];
+
+        boardCopy[toRow * 8 + toCol] = movePiece;
+        boardCopy[fromRow * 8 + fromCol] = "None";
+
+        setBoard(boardCopy);
+    }
+
+    // 칸을 클릭했을 때의 처리
+    const handleTileClick = (row: number, col: number) => {
+        const index = row * 8 + col;
+        const piece = board[index];
+
+        // 기물이 있는 칸이라면 해당 기물의 가능한 움직임 계산
+        if (piece !== "None") {
+            setSelected({row, col});
+
+            // 해당 기물의 종류에 따라 이동 가능한 칸 계산
+            const moves = calculateMoves(piece, row, col);
+            setValidMoves(moves);
+            return;
+        }
+
+        // 빈 칸이고 선택된 말이 있었다면 움직임 처리
+        if (selected) {
+            movePiece(selected.row, selected.col, row, col);
+            setSelected(null);
+            setValidMoves([]);
+        }
+    }
 
     return (
         <div className="bg-(--bg-color) h-screen w-screen flex justify-center items-center">
@@ -240,7 +181,46 @@ export default function Chess () {
 
                 {/** 체스판 */}
                 <div className="grid grid-cols-8 w-[640px] h-[640px]">
-                    {tiles}
+                    {
+                        board.map((piece: Piece, index: number) => {
+                            const row = Math.floor(index / 8);
+                            const col = index % 8;
+
+                            const isDark = (row + col) % 2 === 1;
+                            const isValid = validMoves.some(
+                                (move) => move.row === row && move.col === col
+                            );
+                            const isSelected = selected?.row === row && selected?.col === col;
+
+                            return (
+                                <div
+                                    key={index}
+                                    onClick={() => handleTileClick(row, col)}
+                                    className={`
+                                        w-[80px] h-[80px] flex justify-center items-center relative
+                                        ${isDark ? "bg-(--black-tile)" : "bg-(--white-tile)"}
+                                        ${isSelected ? "outline outline-4 outline-yellow-400" : ""}
+                                    `}
+                                >
+                                    {/** 이동 가능 위치 표시 UI */}
+                                    {
+                                        isValid && (
+                                            <div className="absolute w-[20px] h-[20px] rounded-full bg-green-500 opacity-40"></div>
+                                        )
+                                    }
+                                    {/** 기물 표시 */}
+                                    {
+                                        piece !== "None" && (
+                                            <img 
+                                            src={PIECE_IMAGE_MAP[piece] as string} 
+                                            className="w-[60px] h-[60px]"
+                                            draggable={false}/>
+                                        )
+                                    }
+                                </div>
+                            );
+                        })
+                    }
                 </div>
                 
                 {/** 빈 공간 */}
